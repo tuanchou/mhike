@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mhike/screens/description.dart';
 import 'package:mhike/screens/group.dart';
+import 'package:mhike/screens/profile.dart';
 import 'capture.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 class MyHome extends StatefulWidget {
@@ -281,6 +282,18 @@ class _MyHomeState extends State<MyHome> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const Capture()),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.account_circle_rounded,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Profile()),
                 );
               },
             ),
