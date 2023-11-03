@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "621268383104",
+    "project_id": "mhike-76fc4",
+    "storage_bucket": "mhike-76fc4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:621268383104:android:332f1ce76d6080b8887d65",
+        "android_client_info": {
+          "package_name": "com.example.mhike"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCplzpWu7NrPpricbQ3VwO3NZfBUloiQCw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
