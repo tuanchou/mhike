@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mhike/screens/description.dart';
 import 'package:mhike/screens/group.dart';
+import 'package:mhike/screens/profile.dart';
 import 'capture.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 class MyHome extends StatefulWidget {
@@ -39,7 +40,7 @@ class _MyHomeState extends State<MyHome> {
                     width: 30,
                   ),
                   CircleAvatar(
-                    backgroundImage: AssetImage('assets/register.png'),
+                    backgroundImage: AssetImage('assets/images/register.png'),
                   ),
                 ],
               ),
@@ -66,30 +67,30 @@ class _MyHomeState extends State<MyHome> {
               ),
             ),
 
-            // Padding(
-            //   padding: const EdgeInsets.fromLTRB(18, 20, 11, 0),
-            //   child: Row(
-            //     children: [
-            //       Expanded(
-            //         child: TextFormField(
-            //           autofocus: true,
-            //           decoration: InputDecoration(
-            //             suffixIcon: const Icon(
-            //               Icons.search,
-            //               color: Colors.black12,
-            //             ),
-            //             hintText: 'Search',
-            //             hintStyle: const TextStyle(color: Colors.black),
-            //             border: OutlineInputBorder(
-            //                 borderRadius: BorderRadius.circular(25.7),
-            //                 borderSide:
-            //                     BorderSide(width: 20.0, color: Colors.black)),
-            //           ),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 20, 11, 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        suffixIcon: const Icon(
+                          Icons.search,
+                          color: Colors.black12,
+                        ),
+                        hintText: 'Search',
+                        hintStyle: const TextStyle(color: Colors.black),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25.7),
+                            borderSide:
+                                BorderSide(width: 20.0, color: Colors.black)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(
               height: 30,
             ),
@@ -266,6 +267,18 @@ class _MyHomeState extends State<MyHome> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const Capture()),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.account_circle_rounded,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Profile()),
                 );
               },
             ),
