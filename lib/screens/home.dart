@@ -120,21 +120,29 @@ class _MyHomeState extends State<MyHome> {
                     return Text('Error: ${snapshot.error}');
                   }
                   List<QueryDocumentSnapshot> documents = snapshot.data!.docs;
+
+                  for (int i = 0; i < documents.length; i++) {
+                    print("Document $i:");
+                    print("Image: ${documents[i]['image']}");
+                    print("Description: ${documents[i]['description']}");
+                    // You can print other fields here as needed.
+                  }
+
                   return ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: documents.length,
                     itemBuilder: (context, index) {
-                      String imageUrl = documents[index]['image'];
-                      String description = documents[index]['description'];
+                      String imageUrl = documents[index]['image'] as String? ?? '';
+                      String description = documents[index]['description'] as String? ?? '';
                       return GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => Description(
-                                imageUrl: imageUrl,
+                                imageUrl: "imageUrl",
                                 placeName: 'Place $index',
-                                description: description,
+                                description: "description",
                               ),
                             ),
                           );
@@ -148,7 +156,7 @@ class _MyHomeState extends State<MyHome> {
                               children: [
                                 Image.network(imageUrl),
                                 Text(
-                                  'Place $index',
+                                  'Place index',
                                   style: const TextStyle(
                                       fontSize: 16, color: Colors.white),
                                 ),
@@ -187,6 +195,13 @@ class _MyHomeState extends State<MyHome> {
                     return Text('Error: ${snapshot.error}');
                   }
                   List<QueryDocumentSnapshot> documents = snapshot.data!.docs;
+                  print("Curtuaral");
+                  for (int i = 0; i < documents.length; i++) {
+                    print("Document $i:");
+                    print("Image: ${documents[i]['Imageurl']}");
+                    print("Description: ${documents[i]['Description']}");
+                    // You can print other fields here as needed.
+                  }
                   return ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: documents.length,
