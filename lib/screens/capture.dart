@@ -43,10 +43,11 @@ class _CaptureState extends State<Capture> {
   }
   Future<void> _submitForm() async {
     final user = _auth.currentUser;
+    print(user);
     if (user != null) {
       final userId = user.uid;
 
-      await _firestore.collection('tests').add({
+      await _firestore.collection('hikes').add({
         'title': _titleController.text,
         'description': _descriptionController.text,
         'image_url': imageUrl,
@@ -76,74 +77,8 @@ class _CaptureState extends State<Capture> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
 
-            Text('Title'),
-            TextField(controller: _titleController),
-            SizedBox(height: 16),
-            Text('Description'),
-            TextField(controller: _descriptionController),
-            SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                controller: description,
 
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Description',
-                ),
-              ),
-            ),
-            if (imageUrl.isNotEmpty)
-              Image.network(
-                  imageUrl,
-                  height: 200, // Set the desired height
-                  width: 300,  // Set the desired width
-                  fit: BoxFit.cover ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: IconButton(
-                icon: const Icon(
-                  Icons.camera_alt,
-                  color: Colors.black,
-                ),
-                onPressed: () async {
-                  // Open camera or gallery
-                  ImagePicker imagePicker = ImagePicker();
-                  XFile? file =
-                      await imagePicker.pickImage(source: ImageSource.camera);
-                  //print('${file?.path}');
-                  if (file == null) return;
 
-                  // Create unique file name
-                  String uniqueFileName =
-                      DateTime.now().millisecondsSinceEpoch.toString();
-
-                  // Upload image to Firebase
-                  Reference referenceRoot = FirebaseStorage.instance.ref();
-                  Reference referenceDirImages = referenceRoot.child('images');
-
-                  // Create reference for image to be stored in Firebase
-                  Reference referenceImageToUpload =
-                      referenceDirImages.child(uniqueFileName);
-                  SnackBar snackBar = const SnackBar(
-                    content: Text(
-                        'Description and Image added successfully\n\t\t\t\tNow Press Submit Button'),
-                  );
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  try {
-                    // Store the file
-                    await referenceImageToUpload.putFile(File(file.path));
-                    final url = await referenceImageToUpload.getDownloadURL();
-                    setState(() {
-                      imageUrl = url;
-                    });
-                  } catch (error) {
-                    // print(error);
-                  }
-                },
-              ),
-            ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -155,11 +90,18 @@ class _CaptureState extends State<Capture> {
                   Text('Description'),
                   TextField(controller: _descriptionController),
                   SizedBox(height: 16),
-                  if (imageUrl.isNotEmpty)
-                    Image.network(imageUrl),
-                  ElevatedButton(
+                  if (imageUrl != "null")
+                    Image.network(
+                    imageUrl,
+                    height: 200, // Set the desired height
+                    width: 300,  // Set the desired width
+                    fit: BoxFit.cover ),
+                  IconButton(
+                    icon: const Icon(
+                    Icons.camera_alt,
+                    color: Colors.black,
+                  ),
                     onPressed: _captureAndUploadImage,
-                    child: Text('Capture and Upload Image'),
                   ),
                   ElevatedButton(
                     onPressed: _submitForm,
