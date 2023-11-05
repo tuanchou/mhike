@@ -39,7 +39,7 @@ class _MyHomeState extends State<MyHome> {
                     width: 30,
                   ),
                   CircleAvatar(
-                    backgroundImage: AssetImage('assets/register.png'),
+                    backgroundImage: AssetImage('assets/images/register.png'),
                   ),
                 ],
               ),

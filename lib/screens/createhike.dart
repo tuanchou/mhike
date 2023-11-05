@@ -1,7 +1,7 @@
-import 'package:cloud_fir'
-    'estore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.dart';
+import 'package:mhike/screens/selectlocation.dart';
+
 
 class CreateHike extends StatefulWidget {
   // ignore: use_key_in_widget_constructors
@@ -34,12 +34,12 @@ class _CreateHikeState extends State<CreateHike> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => _buildLocationPicker(),
+                    builder: (context) => MySelectLocation(),
                   ),
-                ).then((value) {
+                ).then((value)  {
                   if (value != null) {
-                    setState(() {
-                      startLocation = value;
+                    setState(() async {
+                      startLocation = "Latitude: ${value['lat']}, Longitude: ${value['lng']}";
                     });
                   }
                 });
@@ -52,12 +52,12 @@ class _CreateHikeState extends State<CreateHike> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => _buildLocationPicker(),
+                    builder: (context) => MySelectLocation(),
                   ),
                 ).then((value) {
                   if (value != null) {
                     setState(() {
-                      endLocation = value;
+                      endLocation =  "Latitude: ${value['lat']}, Longitude: ${value['lng']}";
                     });
                   }
                 });
@@ -132,30 +132,11 @@ class _CreateHikeState extends State<CreateHike> {
     );
   }
 
-  Widget _buildLocationPicker() {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Location Picker'),
-      ),
-      body: SizedBox(
-        height: 500,
-        child: Center(
-          child: OpenStreetMapSearchAndPick(
-            center: LatLong(23, 89),
-            buttonColor: Colors.blue,
-            buttonText: 'Set Location',
-            onPicked: (pickedData) {
-              Navigator.pop(context, pickedData.address);
-            },
-          ),
-        ),
-      ),
-    );
-  }
+
 
   Future<void> _submitData() async {
     if (startLocation == null || endLocation == null || date == null) {
-      //print('Please fill all the fields');
+      print('Please fill all the fields');
       return;
     }
 
@@ -168,7 +149,7 @@ class _CreateHikeState extends State<CreateHike> {
       // Data saved successfully, show success message or navigate to the next screen
     } catch (error) {
       // Handle error, show error message or retry logic
-      // print('Error saving data: $error');
+      print('Error saving data: $error');
     }
   }
 }
