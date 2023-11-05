@@ -54,8 +54,8 @@ class _JoinState extends State<Join> {
           itemBuilder: (BuildContext context, int index) {
             final hikeData = hikes[index].data() as Map<String, dynamic>;
 
-            final startLocation = hikeData['start'] as String?;
-            final endLocation = hikeData['end'] as String?;
+            final startLocation = hikeData['start'] as GeoPoint?;
+            final endLocation = hikeData['end'] as GeoPoint?;
             final timings = hikeData['timings'] as Timestamp?;
 
             return GestureDetector(
