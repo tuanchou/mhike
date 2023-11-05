@@ -15,7 +15,7 @@ void main() async {
   runApp(SafeArea(
       child: MaterialApp(
 
-    initialRoute: 'profile',
+    initialRoute: 'login',
     debugShowCheckedModeBanner: false,
     routes: {
       'splash': (context) => const MySplash(),
