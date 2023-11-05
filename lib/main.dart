@@ -12,15 +12,17 @@ void main() async {
   await Firebase.initializeApp();
   runApp(SafeArea(
       child: MaterialApp(
-    initialRoute: 'splash',
-    debugShowCheckedModeBanner: false,
-    routes: {
-      'splash': (context) => const MySplash(),
-      'login': (context) => const MyLogin(),
-      'register': (context) => const MyRegister(),
-      'home': (context) => const MyHome(),
-      'observation': (context) => ObservationScreen(),
-      'profile': (context) => const Profile()
-    },
-  )));
+        initialRoute: 'login',
+        debugShowCheckedModeBanner: false,
+        routes: {
+          'splash': (context) => const MySplash(),
+          'login': (context) => const MyLogin(),
+          'register': (context) => const MyRegister(),
+          'home': (context) => const MyHome(),
+          'observation': (context) => ObservationScreen(),
+          'profile': (context) => const Profile()
+        },
+     )
+  )
+  );
 }
