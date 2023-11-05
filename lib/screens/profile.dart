@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -27,49 +28,58 @@ class _ProfileState extends State<Profile> {
   }
 
   Future<void> _fetchUserData() async {
-    try {
-      final DocumentSnapshot userSnapshot =
-          await _user.doc('vrgInyw3y5KtLJQdDaFq').get();
-      final userData = userSnapshot.data() as Map<String, dynamic>;
+    // Lấy thông tin người dùng đã đăng nhập từ Firebase Authentication
+    User? user = FirebaseAuth.instance.currentUser;
 
-      if (userData != null) {
-        setState(() {
-          _nameController.text = userData['Name'] ?? '';
-          _addressController.text = userData['Address'] ?? '';
-          _emailController.text = userData['Email'] ?? '';
-          if (userData['DoB'] != null) {
-            _dob = DateTime.parse(userData['DoB']);
-          }
-          _isMale = userData['isMale'] ?? false;
-        });
+    if (user != null) {
+      try {
+        // Sử dụng UserID từ Authentication để truy vấn Firestore
+        final DocumentSnapshot userSnapshot = await _user.doc(user.uid).get();
+        final userData = userSnapshot.data() as Map<String, dynamic>;
+
+        if (userData != null) {
+          setState(() {
+            _nameController.text = userData['Name'] ?? '';
+            _addressController.text = userData['Address'] ?? '';
+            _emailController.text = userData['Email'] ?? '';
+            if (userData['DoB'] != null) {
+              _dob = DateTime.parse(userData['DoB']);
+            }
+            _isMale = userData['isMale'] ?? false;
+          });
+        }
+      } catch (e) {
+        print('Error fetching user data: $e');
       }
-    } catch (e) {
-      print('Error fetching user data: $e');
     }
   }
 
   Future<void> _updateUserData() async {
-    final String newName = _nameController.text;
-    final String newAddress = _addressController.text;
-    final String newDoB = _dob?.toIso8601String() ?? '';
+    User? user = FirebaseAuth.instance.currentUser;
 
-    try {
-      await _user.doc('vrgInyw3y5KtLJQdDaFq').update({
-        'Name': newName,
-        'Address': newAddress,
-        'DoB': newDoB,
-        'Gender': _isMale,
-      });
+    if (user != null) {
+      final String newName = _nameController.text;
+      final String newAddress = _addressController.text;
+      final String newDoB = _dob?.toIso8601String() ?? '';
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'User data updated successfully',
+      try {
+        await _user.doc(user.uid).update({
+          'Name': newName,
+          'Address': newAddress,
+          'DoB': newDoB,
+          'Gender': _isMale,
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'User data updated successfully',
+            ),
           ),
-        ),
-      );
-    } catch (e) {
-      print('Error updating user data: $e');
+        );
+      } catch (e) {
+        print('Error updating user data: $e');
+      }
     }
   }
 
