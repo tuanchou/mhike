@@ -200,10 +200,6 @@ class _MyHomeState extends State<MyHome> {
                     return Text('Error: ${snapshot.error}');
                   }
                   List<QueryDocumentSnapshot> documents = snapshot.data!.docs;
-
-
-
-
                   return ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: documents.length,
