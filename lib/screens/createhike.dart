@@ -38,7 +38,7 @@ class _CreateHikeState extends State<CreateHike> {
                   ),
                 ).then((value)  {
                   if (value != null) {
-                    setState(() async {
+                    setState(() {
                       startLocation = "Latitude: ${value['lat']}, Longitude: ${value['lng']}";
                     });
                   }

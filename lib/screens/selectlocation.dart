@@ -18,7 +18,14 @@ class _MySelectLocationState extends State<MySelectLocation> {
   TextEditingController _originController = TextEditingController();
   Placemark _address = Placemark();
 
-  void _addMarker(LatLng markerPoints) {
+  void _addMarker(LatLng markerPoints) async {
+    final List<Placemark> placemarks = await placemarkFromCoordinates(
+      markerPoints.latitude,
+      markerPoints.longitude,
+    );
+    if (placemarks.isNotEmpty) {
+      _address = placemarks[0];
+    }
     setState(() {
       _manyMarker.add(Marker(
           markerId: MarkerId(
@@ -99,12 +106,30 @@ class _MySelectLocationState extends State<MySelectLocation> {
           ),
           ElevatedButton(
             onPressed: () async {
-              final place = await PositionServices().getPlaceDetails(_originController.text);
-              final selectedLocation = {
-                'lat': place['geometry']['location']['lat'],
-                'lng': place['geometry']['location']['lng'],
-              };
-              Navigator.pop(context, selectedLocation);
+              if (_originController.text.isNotEmpty) {
+                final place = await PositionServices().getPlaceDetails(_originController.text);
+                final selectedLocation = {
+                  'lat': place['geometry']['location']['lat'],
+                  'lng': place['geometry']['location']['lng'],
+                };
+                Navigator.pop(context, selectedLocation);
+              } else {
+                if (_manyMarker.isNotEmpty) {
+                  final markerPoints = _manyMarker.first.position;
+                  final selectedLocation = {
+                    'lat': markerPoints.latitude,
+                    'lng': markerPoints.longitude,
+                  };
+                  Navigator.pop(context, selectedLocation);
+                } else {
+                  // Xử lý khi cả _originController và _manyMarker đều trống
+                  // ở đây bạn có thể hiển thị thông báo hoặc thực hiện hành động khác.
+                  // Ví dụ:
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text("Please enter a location or select a marker."),
+                  ));
+                }
+              }
             },
             child: const Text('Pick'),
           ),
