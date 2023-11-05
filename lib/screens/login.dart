@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:mhike/reusable_widgets/reusable_widgets.dart';
+import 'package:mhike/widgets/reusable_widgets.dart';
 
 class MyLogin extends StatefulWidget {
   const MyLogin({super.key});
@@ -37,7 +37,7 @@ class _MyLoginState extends State<MyLogin> {
                   ),
                   reusableTextField('Enter Password', Icons.lock_outline, true,
                       _passwordTextController),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   loginRegisterButton(context, true, () {

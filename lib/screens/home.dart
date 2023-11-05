@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:mhike/screens/createhike.dart';
 import 'package:mhike/screens/description.dart';
 import 'package:mhike/screens/group.dart';
 import 'package:mhike/screens/profile.dart';
@@ -13,13 +15,20 @@ class MyHome extends StatefulWidget {
 
 class _MyHomeState extends State<MyHome> {
   String imageUrl = '';
+  final _auth = FirebaseAuth.instance;
   // final FirebaseStorage _storage = FirebaseStorage.instance;
   final CollectionReference _placesReference =
-  FirebaseFirestore.instance.collection('places');
+  FirebaseFirestore.instance.collection('hike');
   final CollectionReference _cultural =
-  FirebaseFirestore.instance.collection('cultural');
+  FirebaseFirestore.instance.collection('hike');
+
   @override
   Widget build(BuildContext context) {
+    final user = _auth.currentUser;
+    String userId = "";
+    if (user != null) {
+      userId = user.uid;
+    }
     return Scaffold(
       backgroundColor: const Color.fromRGBO(232, 244, 243, 0.765),
       drawer: const Drawer(
@@ -121,28 +130,25 @@ class _MyHomeState extends State<MyHome> {
                   }
                   List<QueryDocumentSnapshot> documents = snapshot.data!.docs;
 
-                  for (int i = 0; i < documents.length; i++) {
-                    print("Document $i:");
-                    print("Image: ${documents[i]['image']}");
-                    print("Description: ${documents[i]['description']}");
-                    // You can print other fields here as needed.
-                  }
+
 
                   return ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: documents.length,
                     itemBuilder: (context, index) {
-                      String imageUrl = documents[index]['image'] as String? ?? '';
-                      String description = documents[index]['description'] as String? ?? '';
+                      String imageUrl = documents[index]['imageUrl'];
+                      String description = documents[index]['description'];
+                      String title = documents[index]['title'];
+
                       return GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => Description(
-                                imageUrl: "imageUrl",
-                                placeName: 'Place $index',
-                                description: "description",
+                                imageUrl: imageUrl,
+                                placeName: title,
+                                description: description,
                               ),
                             ),
                           );
@@ -173,7 +179,7 @@ class _MyHomeState extends State<MyHome> {
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Cultural Diversity',
+                'My Hikes',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -195,29 +201,30 @@ class _MyHomeState extends State<MyHome> {
                     return Text('Error: ${snapshot.error}');
                   }
                   List<QueryDocumentSnapshot> documents = snapshot.data!.docs;
-                  print("Curtuaral");
-                  for (int i = 0; i < documents.length; i++) {
-                    print("Document $i:");
-                    print("Image: ${documents[i]['Imageurl']}");
-                    print("Description: ${documents[i]['Description']}");
-                    // You can print other fields here as needed.
-                  }
                   return ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: documents.length,
                     itemBuilder: (context, index) {
-                      String imageUrl = documents[index]['Imageurl'];
-                      String description = documents[index]['Description'];
+                      //if(documents[index]['userId'] == userId) {
+                        String hikeId =  documents[index].id;
+                        String imageUrl = documents[index]['imageUrl'];
+                        String description = documents[index]['description'];
+                        String title = documents[index]['title'];
+
+                      //}
                       return GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => Description(
-                                imageUrl: imageUrl,
-                                placeName: 'Place $index',
-                                description: description,
-                              ),
+                              // builder: (context) => Description(
+                              //   imageUrl: imageUrl,
+                              //   placeName: title,
+                              //   description: description,
+                              // ),
+                              builder: (context) => CreateHike(
+                                  hikeId: hikeId
+                            ),
                             ),
                           );
                         },
@@ -230,7 +237,7 @@ class _MyHomeState extends State<MyHome> {
                               children: [
                                 Image.network(imageUrl),
                                 Text(
-                                  'Place $index',
+                                  title,
                                   style: const TextStyle(
                                       fontSize: 16, color: Colors.white),
                                 ),

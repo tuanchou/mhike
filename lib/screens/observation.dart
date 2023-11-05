@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../reusable_widgets/observation_item.dart';
+import '../widgets/observation_item.dart';
 
 class ObservationScreen extends StatefulWidget {
   @override

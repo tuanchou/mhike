@@ -1,23 +1,99 @@
-import 'package:cloud_fir'
-    'estore/cloud_firestore.dart';
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mhike/screens/selectlocation.dart';
+
 
 class CreateHike extends StatefulWidget {
-  // ignore: use_key_in_widget_constructors
-  const CreateHike({Key? key});
+  // ignore: use_key_in_widget_constructors\
+  final String? hikeId ;
+  const CreateHike({this.hikeId});
 
   @override
   State<CreateHike> createState() => _CreateHikeState();
 }
 
 class _CreateHikeState extends State<CreateHike> {
+
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+  XFile? _imageFile;
+
+  String _imageUrl = 'null';
   final CollectionReference _reference =
       FirebaseFirestore.instance.collection('hike');
   String? startLocation;
   String? endLocation;
   DateTime? date;
+  final _auth = FirebaseAuth.instance;
+  Future<void> _pickImage() async {
+    XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = pickedFile;
+      });
+    }
+  }
+  Future<void> _updateData() async {
+    if (startLocation == null || endLocation == null || date == null) {
+      print('Please fill all the fields');
+      return;
+    }
+
+    try {
+      final user = _auth.currentUser;
+      await _reference.doc(widget.hikeId).update({
+        'start': startLocation,
+        'end': endLocation,
+        'timings': date,
+      });
+      // Data updated successfully
+    } catch (error) {
+      print('Error updating data: $error');
+    }
+  }
+  Future<void> _deleteData() async {
+    try {
+      await _reference.doc(widget.hikeId).delete();
+      // Data deleted successfully
+    } catch (error) {
+      print('Error deleting data: $error');
+    }
+  }
+  @override
+  void initState() {
+    super.initState();
+    // Load existing data when the hikeId is provided
+    if (widget.hikeId != null) {
+      loadHikeData(widget.hikeId);
+    }
+  }
+  Future<void> loadHikeData(String? hikeId) async {
+    final DocumentSnapshot userSnapshot = await _reference.doc(hikeId).get();
+    final userHike = userSnapshot.data() as Map<String, dynamic>;
+
+    if (userHike != null) {
+      setState(() {
+        _titleController.text = userHike['title'];
+        _descriptionController.text = userHike['description'];
+        startLocation = userHike['start'];
+        endLocation = userHike['end'];
+        date = userHike['timings'].toDate(); // Assuming it's a DateTime
+        _imageUrl = userHike['imageUrl'];
+      });
+    }
+
+
+    setState(() {
+      // Update the state to reflect the loaded data
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,17 +105,32 @@ class _CreateHikeState extends State<CreateHike> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (_imageFile != null)
+              Image.file(
+                File(_imageFile!.path),
+                height: 200,
+              ),
+            ElevatedButton(
+              onPressed: _pickImage,
+              child: Text('Pick an Image'),
+            ),
+            Text('Title'),
+            TextField(controller: _titleController),
+            SizedBox(height: 16),
+            Text('Description'),
+            TextField(controller: _descriptionController),
+            SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => _buildLocationPicker(),
+                    builder: (context) => MySelectLocation(),
                   ),
-                ).then((value) {
+                ).then((value)  {
                   if (value != null) {
                     setState(() {
-                      startLocation = value;
+                      startLocation = "Latitude: ${value['lat']}, Longitude: ${value['lng']}";
                     });
                   }
                 });
@@ -52,12 +143,12 @@ class _CreateHikeState extends State<CreateHike> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => _buildLocationPicker(),
+                    builder: (context) => MySelectLocation(),
                   ),
                 ).then((value) {
                   if (value != null) {
                     setState(() {
-                      endLocation = value;
+                      endLocation =  "Latitude: ${value['lat']}, Longitude: ${value['lng']}";
                     });
                   }
                 });
@@ -126,49 +217,50 @@ class _CreateHikeState extends State<CreateHike> {
               onPressed: _submitData,
               child: const Text('Submit'),
             ),
+            ElevatedButton(
+              onPressed: _updateData,
+              child: const Text('Update'),
+            ),
+            ElevatedButton(
+              onPressed: _deleteData,
+              child: const Text('Delete'),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLocationPicker() {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Location Picker'),
-      ),
-      body: SizedBox(
-        height: 500,
-        child: Center(
-          child: OpenStreetMapSearchAndPick(
-            center: LatLong(23, 89),
-            buttonColor: Colors.blue,
-            buttonText: 'Set Location',
-            onPicked: (pickedData) {
-              Navigator.pop(context, pickedData.address);
-            },
-          ),
-        ),
-      ),
-    );
-  }
+
 
   Future<void> _submitData() async {
+
+    final user = _auth.currentUser;
+
     if (startLocation == null || endLocation == null || date == null) {
-      //print('Please fill all the fields');
+      print('Please fill all the fields');
       return;
     }
 
+
     try {
+      Reference storageReference = _storage.ref().child('hikesImage/${DateTime.now()}.jpg');
+      await storageReference.putFile(File(_imageFile!.path));
+      String imageUrl = await storageReference.getDownloadURL();
+      print(user?.uid);
       await _reference.add({
+        'title':_titleController.text,
+        'description': _descriptionController.text,
+        'imageUrl': imageUrl,
         'start': startLocation,
         'end': endLocation,
         'timings': date,
+        'userId': user?.uid,
       });
       // Data saved successfully, show success message or navigate to the next screen
     } catch (error) {
       // Handle error, show error message or retry logic
-      // print('Error saving data: $error');
+      print('Error saving data: $error');
     }
   }
 }

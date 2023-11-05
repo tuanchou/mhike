@@ -1,5 +1,3 @@
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:mhike/screens/home.dart';
@@ -14,16 +12,18 @@ void main() async {
   await Firebase.initializeApp();
   runApp(SafeArea(
       child: MaterialApp(
-
-    initialRoute: 'login',
-    debugShowCheckedModeBanner: false,
-    routes: {
-      'splash': (context) => const MySplash(),
-      'login': (context) => const MyLogin(),
-      'register': (context) => const MyRegister(),
-      'home': (context) => const MyHome(),
-      'observation': (context) => ObservationScreen(),
-      'profile': (context) => const Profile()
-    },
-  )));
+        // initialRoute: 'login',
+        initialRoute: 'login',
+        debugShowCheckedModeBanner: false,
+        routes: {
+          'splash': (context) => const MySplash(),
+          'login': (context) => const MyLogin(),
+          'register': (context) => const MyRegister(),
+          'home': (context) => const MyHome(),
+          'observation': (context) => ObservationScreen(),
+          'profile': (context) => const Profile()
+        },
+     )
+  )
+  );
 }
