@@ -13,7 +13,7 @@ class Capture extends StatefulWidget {
 }
 
 class _CaptureState extends State<Capture> {
-  String imageUrl = '';
+  String imageUrl = 'null';
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _auth = FirebaseAuth.instance;
