@@ -76,9 +76,6 @@ class _CaptureState extends State<Capture> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-
-
-
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(

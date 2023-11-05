@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:mhike/screens/createhike.dart';
 import 'package:mhike/screens/description.dart';
 import 'package:mhike/screens/group.dart';
 import 'package:mhike/screens/profile.dart';
@@ -205,6 +206,7 @@ class _MyHomeState extends State<MyHome> {
                     itemCount: documents.length,
                     itemBuilder: (context, index) {
                       //if(documents[index]['userId'] == userId) {
+                        String hikeId =  documents[index].id;
                         String imageUrl = documents[index]['imageUrl'];
                         String description = documents[index]['description'];
                         String title = documents[index]['title'];
@@ -215,11 +217,14 @@ class _MyHomeState extends State<MyHome> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => Description(
-                                imageUrl: imageUrl,
-                                placeName: title,
-                                description: description,
-                              ),
+                              // builder: (context) => Description(
+                              //   imageUrl: imageUrl,
+                              //   placeName: title,
+                              //   description: description,
+                              // ),
+                              builder: (context) => CreateHike(
+                                  hikeId: hikeId
+                            ),
                             ),
                           );
                         },
