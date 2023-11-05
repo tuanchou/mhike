@@ -88,6 +88,7 @@ class _MyRegisterState extends State<MyRegister> {
                           'Address': null,
                           'DoB': null,
                           'Gender': null,
+                          'Avatar': null,
                         }).then((_) {
                           Navigator.pushNamed(context, 'login');
                         }).catchError((error) {

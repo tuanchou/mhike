@@ -4,6 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class Profile extends StatefulWidget {
   const Profile({Key? key}) : super(key: key);
@@ -13,13 +14,18 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+  final ImagePicker _picker = ImagePicker();
+  XFile? _imageFile;
+  String _imageURL = '';
   final CollectionReference _user =
       FirebaseFirestore.instance.collection('user-info');
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   DateTime? _dob;
-  bool? _isMale;
+  bool? gender;
+  File? _pickedImage;
+  final _storage = FirebaseStorage.instance;
 
   @override
   void initState() {
@@ -39,13 +45,14 @@ class _ProfileState extends State<Profile> {
 
         if (userData != null) {
           setState(() {
+            _imageURL = userData['Avatar' ?? ''];
             _nameController.text = userData['Name'] ?? '';
             _addressController.text = userData['Address'] ?? '';
             _emailController.text = userData['Email'] ?? '';
             if (userData['DoB'] != null) {
               _dob = DateTime.parse(userData['DoB']);
             }
-            _isMale = userData['isMale'] ?? false;
+            gender = userData['Gender'] ?? false;
           });
         }
       } catch (e) {
@@ -63,11 +70,16 @@ class _ProfileState extends State<Profile> {
       final String newDoB = _dob?.toIso8601String() ?? '';
 
       try {
+        Reference storageReference =
+            _storage.ref().child('UserAvatar/${DateTime.now()}.jpg');
+        await storageReference.putFile(File(_imageFile!.path));
+        String imageUrl = await storageReference.getDownloadURL();
         await _user.doc(user.uid).update({
           'Name': newName,
           'Address': newAddress,
           'DoB': newDoB,
-          'Gender': _isMale,
+          'Gender': gender,
+          'Avatar': imageUrl
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -80,6 +92,16 @@ class _ProfileState extends State<Profile> {
       } catch (e) {
         print('Error updating user data: $e');
       }
+    }
+  }
+
+  Future<void> _pickImage() async {
+    XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = pickedFile;
+      });
     }
   }
 
@@ -96,15 +118,30 @@ class _ProfileState extends State<Profile> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Center(
-              child: Stack(
-                children: [
-                  Container(
-                    margin: EdgeInsets.only(bottom: 3.0),
-                    // ... rest of your code for avatar
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                  _imageFile != null
+                      ? Image.file(
+                          File(_imageFile!.path),
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                        )
+                      : _imageURL.isNotEmpty
+                          ? Image.network(
+                              _imageURL,
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            )
+                          : Icon(Icons.account_circle,
+                              size: 100, color: Colors.grey),
+                  ElevatedButton(
+                    onPressed: _pickImage,
+                    child: Text('Change Avatar'),
                   ),
-                ],
-              ),
-            ),
+                ])),
             SizedBox(
               height: 5,
             ),
@@ -202,45 +239,63 @@ class _ProfileState extends State<Profile> {
                   ),
                 )),
             SizedBox(height: 5),
-            TextFormField(
-              readOnly: true,
-              controller: TextEditingController(
-                  text: _dob != null ? _dob.toString() : ''),
-              onTap: () {
-                showDatePicker(
-                  context: context,
-                  initialDate: _dob ?? DateTime.now(),
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime.now(),
-                ).then((pickedDate) {
-                  if (pickedDate != null && pickedDate != _dob) {
-                    setState(() {
-                      _dob = pickedDate;
-                    });
-                  }
-                });
-              },
-            ),
+            Row(children: [
+              const Text(
+                'Date:',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _dob != null
+                    ? DateFormat('yyyy-MM-dd').format(_dob!)
+                    : 'Not selected',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Color.fromARGB(255, 54, 244, 105),
+                ),
+              ),
+              SizedBox(width: 5),
+              ElevatedButton(
+                onPressed: () {
+                  showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(2100),
+                  ).then((value) {
+                    if (value != null) {
+                      setState(() {
+                        _dob = value;
+                      });
+                    }
+                  });
+                },
+                child: const Text('Select Date'),
+              ),
+            ]),
             SizedBox(
               height: 5,
             ),
             Row(
               children: [
-                Text("Gender: "),
+                const Text(
+                  "Gender: ",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
                 Checkbox(
-                  value: _isMale ?? false,
+                  value: gender ?? false,
                   onChanged: (value) {
                     setState(() {
-                      _isMale = value;
+                      gender = value;
                     });
                   },
                 ),
                 Text("Male"),
                 Checkbox(
-                  value: _isMale == false,
+                  value: gender == false,
                   onChanged: (value) {
                     setState(() {
-                      _isMale = !value!;
+                      gender = !value!;
                     });
                   },
                 ),
