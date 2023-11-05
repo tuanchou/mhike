@@ -1,6 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:mhike/reusable_widgets/reusable_widgets.dart';
+import 'package:mhike/widgets/reusable_widgets.dart';
 
 class MyRegister extends StatefulWidget {
   const MyRegister({super.key});
@@ -75,10 +76,25 @@ class _MyRegisterState extends State<MyRegister> {
                           .createUserWithEmailAndPassword(
                               email: _emailTextController.text,
                               password: _passwordTextController.text)
-                          .then((value) {
-                        Navigator.pushNamed(context, 'login');
-                      }).onError((error, stackTrace) {
-                        print("Error ${error.toString()}");
+                          .then((userCredential) {
+                        String userID = userCredential.user?.uid ?? '';
+                        FirebaseFirestore.instance
+                            .collection('user-info')
+                            .doc(userID)
+                            .set({
+                          'UserID': userID,
+                          'Name': _nameTextController.text,
+                          'Email': _emailTextController.text,
+                          'Address': null,
+                          'DoB': null,
+                          'Gender': null,
+                        }).then((_) {
+                          Navigator.pushNamed(context, 'login');
+                        }).catchError((error) {
+                          print("Error saving user data: $error");
+                        });
+                      }).catchError((error) {
+                        print("Error creating user: $error");
                       });
                     })
                   ],

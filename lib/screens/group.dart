@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.dart';
 import 'package:mhike/screens/createhike.dart';
 import 'package:mhike/screens/join.dart';
 
@@ -51,21 +50,21 @@ class _GroupState extends State<Group> {
                 ),
               ],
             ),
-            SizedBox(
-              height: 500,
-              child: Center(
-                child: OpenStreetMapSearchAndPick(
-                  center: LatLong(23, 89),
-                  buttonColor: Colors.yellow,
-                  buttonText: 'Set Current Location',
-                  onPicked: (pickedData) {
-                    // print(pickedData.latLong.latitude);
-                    // print(pickedData.latLong.longitude);
-                    // print(pickedData.address);
-                  },
-                ),
-              ),
-            ),
+            // SizedBox(
+            //   height: 500,
+            //   child: Center(
+            //     child: OpenStreetMapSearchAndPick(
+            //       center: LatLong(23, 89),
+            //       buttonColor: Colors.yellow,
+            //       buttonText: 'Set Current Location',
+            //       onPicked: (pickedData) {
+            //         // print(pickedData.latLong.latitude);
+            //         // print(pickedData.latLong.longitude);
+            //         // print(pickedData.address);
+            //       },
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),
