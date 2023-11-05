@@ -16,7 +16,7 @@ class _CaptureState extends State<Capture> {
   GlobalKey<FormState> key = GlobalKey();
   TextEditingController description = TextEditingController();
   final CollectionReference _reference =
-      FirebaseFirestore.instance.collection('places');
+      FirebaseFirestore.instance.collection('hike');
 
   @override
   Widget build(BuildContext context) {

@@ -4,23 +4,23 @@ import 'package:mhike/screens/capture.dart';
 import 'package:mhike/screens/group.dart';
 import 'package:mhike/screens/home.dart';
 
-class Description extends StatelessWidget {
+class DetailObservation extends StatelessWidget {
   final String imageUrl;
-  final String placeName;
   final String description;
+  final Timestamp date;
 
-  const Description({
+  const DetailObservation({
     Key? key,
     required this.imageUrl,
-    required this.placeName,
     required this.description,
+    required this.date,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Description"),
+        title: const Text("Detail"),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -36,7 +36,7 @@ class Description extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                '\n\n$description',
+                ' ${date.toDate()}👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻\n\n$description',
                 style: const TextStyle(
                   color: Colors.green,
                   fontSize: 24,
