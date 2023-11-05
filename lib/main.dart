@@ -12,7 +12,8 @@ void main() async {
   await Firebase.initializeApp();
   runApp(SafeArea(
       child: MaterialApp(
-        initialRoute: 'login',
+        // initialRoute: 'login',
+        initialRoute: 'home',
         debugShowCheckedModeBanner: false,
         routes: {
           'splash': (context) => const MySplash(),

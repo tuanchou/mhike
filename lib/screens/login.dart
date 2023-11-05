@@ -37,7 +37,7 @@ class _MyLoginState extends State<MyLogin> {
                   ),
                   reusableTextField('Enter Password', Icons.lock_outline, true,
                       _passwordTextController),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   loginRegisterButton(context, true, () {
