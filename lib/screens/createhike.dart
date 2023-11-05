@@ -8,14 +8,16 @@ import 'package:mhike/screens/selectlocation.dart';
 
 
 class CreateHike extends StatefulWidget {
-  // ignore: use_key_in_widget_constructors
-  const CreateHike({Key? key});
+  // ignore: use_key_in_widget_constructors\
+  final String? hikeId ;
+  const CreateHike({this.hikeId});
 
   @override
   State<CreateHike> createState() => _CreateHikeState();
 }
 
 class _CreateHikeState extends State<CreateHike> {
+
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -46,7 +48,7 @@ class _CreateHikeState extends State<CreateHike> {
 
     try {
       final user = _auth.currentUser;
-      await _reference.doc('YOUR_DOCUMENT_ID').update({
+      await _reference.doc(widget.hikeId).update({
         'start': startLocation,
         'end': endLocation,
         'timings': date,
@@ -58,14 +60,40 @@ class _CreateHikeState extends State<CreateHike> {
   }
   Future<void> _deleteData() async {
     try {
-      await _reference.doc('YOUR_DOCUMENT_ID').delete();
+      await _reference.doc(widget.hikeId).delete();
       // Data deleted successfully
     } catch (error) {
       print('Error deleting data: $error');
     }
   }
+  @override
+  void initState() {
+    super.initState();
+    // Load existing data when the hikeId is provided
+    if (widget.hikeId != null) {
+      loadHikeData(widget.hikeId);
+    }
+  }
+  Future<void> loadHikeData(String? hikeId) async {
+    final DocumentSnapshot userSnapshot = await _reference.doc(hikeId).get();
+    final userHike = userSnapshot.data() as Map<String, dynamic>;
+
+    if (userHike != null) {
+      setState(() {
+        _titleController.text = userHike['title'];
+        _descriptionController.text = userHike['description'];
+        startLocation = userHike['start'];
+        endLocation = userHike['end'];
+        date = userHike['timings'].toDate(); // Assuming it's a DateTime
+        _imageUrl = userHike['imageUrl'];
+      });
+    }
 
 
+    setState(() {
+      // Update the state to reflect the loaded data
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
