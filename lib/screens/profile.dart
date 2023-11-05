@@ -45,7 +45,6 @@ class _ProfileState extends State<Profile> {
 
         if (userData != null) {
           setState(() {
-            _imageURL = userData['Avatar' ?? ''];
             _nameController.text = userData['Name'] ?? '';
             _addressController.text = userData['Address'] ?? '';
             _emailController.text = userData['Email'] ?? '';
@@ -53,6 +52,7 @@ class _ProfileState extends State<Profile> {
               _dob = DateTime.parse(userData['DoB']);
             }
             gender = userData['Gender'] ?? false;
+            _imageURL = userData['Avatar'];
           });
         }
       } catch (e) {
