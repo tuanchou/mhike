@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-TextField reusableTextField(String text, IconData icon, bool isPasswordType,
+TextFormField reusableTextField(String text, IconData icon, bool isPasswordType,
     TextEditingController controller) {
-  return TextField(
+  return TextFormField(
       controller: controller,
       obscureText: isPasswordType,
       enableSuggestions: !isPasswordType,
@@ -21,12 +22,16 @@ TextField reusableTextField(String text, IconData icon, bool isPasswordType,
           filled: true,
           floatingLabelBehavior: FloatingLabelBehavior.never,
           fillColor: Colors.white.withOpacity(0.3),
+          counterText: "",
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30.0),
               borderSide: const BorderSide(width: 0, style: BorderStyle.none))),
+      maxLength: 150,
+      maxLengthEnforcement: MaxLengthEnforcement.enforced,
       keyboardType: isPasswordType
           ? TextInputType.visiblePassword
           : TextInputType.emailAddress);
+
 }
 
 Container loginRegisterButton(
@@ -58,3 +63,5 @@ Container loginRegisterButton(
     ),
   );
 }
+
+
