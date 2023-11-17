@@ -30,7 +30,8 @@ class _CaptureState extends State<Capture> {
 
     if (pickedFile != null) {
       final imageFile = pickedFile.path;
-      final storageReference = _storage.ref().child('images/${DateTime.now()}.jpg');
+      final storageReference =
+          _storage.ref().child('images/${DateTime.now()}.jpg');
       final uploadTask = storageReference.putFile(File(imageFile));
 
       await uploadTask.whenComplete(() async {
@@ -41,6 +42,7 @@ class _CaptureState extends State<Capture> {
       });
     }
   }
+
   Future<void> _submitForm() async {
     final user = _auth.currentUser;
     print(user);
@@ -70,42 +72,51 @@ class _CaptureState extends State<Capture> {
         backgroundColor: Colors.green,
         title: const Text('Capture and Upload Image'),
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Title'),
-                  TextField(controller: _titleController),
-                  SizedBox(height: 16),
-                  Text('Description'),
-                  TextField(controller: _descriptionController),
-                  SizedBox(height: 16),
-                  if (imageUrl != "null")
-                    Image.network(
-                    imageUrl,
-                    height: 200, // Set the desired height
-                    width: 300,  // Set the desired width
-                    fit: BoxFit.cover ),
-                  IconButton(
-                    icon: const Icon(
-                    Icons.camera_alt,
-                    color: Colors.black,
-                  ),
-                    onPressed: _captureAndUploadImage,
-                  ),
-                  ElevatedButton(
-                    onPressed: _submitForm,
-                    child: Text('Submit Form'),
-                  ),
-                ],
+            Text(
+              'Title',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
+            ),
+            SizedBox(height: 8),
+            TextField(controller: _titleController),
+            SizedBox(height: 16),
+            Text(
+              'Description',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 8),
+            TextField(controller: _descriptionController),
+            SizedBox(height: 16),
+            if (imageUrl != "null")
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8.0),
+                child: Image.network(
+                  imageUrl,
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _captureAndUploadImage,
+              icon: Icon(Icons.camera_alt),
+              label: Text('Capture and Upload Image'),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _submitForm,
+              child: Text('Submit Form'),
             ),
           ],
         ),
