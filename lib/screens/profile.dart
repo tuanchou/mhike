@@ -17,7 +17,7 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
   final ImagePicker _picker = ImagePicker();
   XFile? _imageFile;
-  String _imageURL = '';
+  String _imageURL = "null";
   final CollectionReference _user =
       FirebaseFirestore.instance.collection('user-info');
   final TextEditingController _nameController = TextEditingController();
@@ -53,7 +53,7 @@ class _ProfileState extends State<Profile> {
               _dob = DateTime.parse(userData['DoB']);
             }
             gender = userData['Gender'] ?? false;
-            _imageURL = userData['Avatar'];
+            _imageURL = userData['Avatar'] ?? '';
           });
         }
       } catch (e) {
@@ -69,12 +69,15 @@ class _ProfileState extends State<Profile> {
       final String newName = _nameController.text;
       final String newAddress = _addressController.text;
       final String newDoB = _dob?.toIso8601String() ?? '';
-      print(_imageFile.toString());
+
       try {
-        Reference storageReference =
-            _storage.ref().child('UserAvatar/${DateTime.now()}.jpg');
-        await storageReference.putFile(File(_imageFile!.path));
-        String imageUrl = await storageReference.getDownloadURL();
+        String imageUrl = _imageURL;
+        if (_imageFile != null) {
+          Reference storageReference =
+              _storage.ref().child('UserAvatar/${DateTime.now()}.jpg');
+          await storageReference.putFile(File(_imageFile!.path));
+          imageUrl = await storageReference.getDownloadURL();
+        }
 
         await _user.doc(user.uid).update({
           'Name': newName,
