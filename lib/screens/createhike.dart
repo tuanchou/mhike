@@ -64,14 +64,7 @@ class _CreateHikeState extends State<CreateHike> {
     }
   }
 
-  Future<void> _deleteData() async {
-    try {
-      await _reference.doc(widget.hikeId).delete();
-      // Data deleted successfully
-    } catch (error) {
-      print('Error deleting data: $error');
-    }
-  }
+
 
   @override
   void initState() {
@@ -372,6 +365,36 @@ class _CreateHikeState extends State<CreateHike> {
         });
       }
     });
+  }
+  Future<void> _deleteData() async {
+    setState(() {
+      _isLoading = true;
+      _isSubmitting = true;
+    });
+
+    try {
+      if (widget.hikeId != null) {
+        await _reference.doc(widget.hikeId).delete();
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Deleted Successfully"),
+        ));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MyHome(),
+          ),
+        );
+      } else {
+        print('No hikeId provided. Unable to delete data.');
+      }
+    } catch (error) {
+      print('Error deleting data: $error');
+    } finally {
+      setState(() {
+        _isLoading = false;
+        _isSubmitting = false;
+      });
+    }
   }
 
   Future<void> _submitData() async {
