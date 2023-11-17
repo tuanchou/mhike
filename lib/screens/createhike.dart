@@ -5,11 +5,11 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mhike/screens/selectlocation.dart';
-
+import 'package:intl/intl.dart';
 
 class CreateHike extends StatefulWidget {
   // ignore: use_key_in_widget_constructors\
-  final String? hikeId ;
+  final String? hikeId;
   const CreateHike({this.hikeId});
 
   @override
@@ -17,7 +17,6 @@ class CreateHike extends StatefulWidget {
 }
 
 class _CreateHikeState extends State<CreateHike> {
-
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -40,6 +39,7 @@ class _CreateHikeState extends State<CreateHike> {
       });
     }
   }
+
   Future<void> _updateData() async {
     if (startLocation == null || endLocation == null || date == null) {
       print('Please fill all the fields');
@@ -58,6 +58,7 @@ class _CreateHikeState extends State<CreateHike> {
       print('Error updating data: $error');
     }
   }
+
   Future<void> _deleteData() async {
     try {
       await _reference.doc(widget.hikeId).delete();
@@ -66,6 +67,7 @@ class _CreateHikeState extends State<CreateHike> {
       print('Error deleting data: $error');
     }
   }
+
   @override
   void initState() {
     super.initState();
@@ -74,6 +76,7 @@ class _CreateHikeState extends State<CreateHike> {
       loadHikeData(widget.hikeId);
     }
   }
+
   Future<void> loadHikeData(String? hikeId) async {
     final DocumentSnapshot userSnapshot = await _reference.doc(hikeId).get();
     final userHike = userSnapshot.data() as Map<String, dynamic>;
@@ -89,130 +92,166 @@ class _CreateHikeState extends State<CreateHike> {
       });
     }
 
-
     setState(() {
       // Update the state to reflect the loaded data
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Hike'),
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (_imageFile != null)
-              Image.file(
-                File(_imageFile!.path),
-                height: 200,
-              ),
             ElevatedButton(
               onPressed: _pickImage,
               child: Text('Pick an Image'),
             ),
+            SizedBox(height: 16),
             Text('Title'),
             TextField(controller: _titleController),
             SizedBox(height: 16),
             Text('Description'),
             TextField(controller: _descriptionController),
             SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MySelectLocation(),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Start Location:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        startLocation ?? 'Not selected',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.blue, // Set start location text color
+                        ),
+                      ),
+                    ],
                   ),
-                ).then((value)  {
-                  if (value != null) {
-                    setState(() {
-                      startLocation = "Latitude: ${value['lat']}, Longitude: ${value['lng']}";
+                ),
+                SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MySelectLocation(),
+                      ),
+                    ).then((value) {
+                      if (value != null) {
+                        setState(() {
+                          startLocation =
+                              "Latitude: ${value['lat']}, Longitude: ${value['lng']}";
+                        });
+                      }
                     });
-                  }
-                });
-              },
-              child: const Text('Select Start Location'),
+                  },
+                  child: const Text('Select Start Location'),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MySelectLocation(),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'End Location:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        endLocation ?? 'Not selected',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.green, // Set end location text color
+                        ),
+                      ),
+                    ],
                   ),
-                ).then((value) {
-                  if (value != null) {
-                    setState(() {
-                      endLocation =  "Latitude: ${value['lat']}, Longitude: ${value['lng']}";
+                ),
+                SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MySelectLocation(),
+                      ),
+                    ).then((value) {
+                      if (value != null) {
+                        setState(() {
+                          endLocation =
+                              "Latitude: ${value['lat']}, Longitude: ${value['lng']}";
+                        });
+                      }
                     });
-                  }
-                });
-              },
-              child: const Text('Select End Location'),
+                  },
+                  child: const Text('Select End Location'),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime(2100),
-                ).then((value) {
-                  if (value != null) {
-                    setState(() {
-                      date = value;
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Date:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        date != null
+                            ? DateFormat('yyyy-MM-dd').format(date!)
+                            : 'Not selected',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.red, // Set date text color
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(2100),
+                    ).then((value) {
+                      if (value != null) {
+                        setState(() {
+                          date = value;
+                        });
+                      }
                     });
-                  }
-                });
-              },
-              child: const Text('Select Date'),
+                  },
+                  child: const Text('Select Date'),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            const Text(
-              'Start Location:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              startLocation ?? 'Not selected',
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.blue, // Set start location text color
-              ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'End Location:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              endLocation ?? 'Not selected',
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.green, // Set end location text color
-              ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Date:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              date?.toString() ?? 'Not selected',
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.red, // Set date text color
-              ),
-            ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: _submitData,
               child: const Text('Submit'),
@@ -231,10 +270,7 @@ class _CreateHikeState extends State<CreateHike> {
     );
   }
 
-
-
   Future<void> _submitData() async {
-
     final user = _auth.currentUser;
 
     if (startLocation == null || endLocation == null || date == null) {
@@ -242,14 +278,14 @@ class _CreateHikeState extends State<CreateHike> {
       return;
     }
 
-
     try {
-      Reference storageReference = _storage.ref().child('hikesImage/${DateTime.now()}.jpg');
+      Reference storageReference =
+          _storage.ref().child('hikesImage/${DateTime.now()}.jpg');
       await storageReference.putFile(File(_imageFile!.path));
       String imageUrl = await storageReference.getDownloadURL();
       print(user?.uid);
       await _reference.add({
-        'title':_titleController.text,
+        'title': _titleController.text,
         'description': _descriptionController.text,
         'imageUrl': imageUrl,
         'start': startLocation,

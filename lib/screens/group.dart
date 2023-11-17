@@ -4,8 +4,7 @@ import 'package:mhike/screens/createhike.dart';
 import 'package:mhike/screens/join.dart';
 
 class Group extends StatefulWidget {
-  // ignore: use_key_in_widget_constructors
-  const Group({Key? key});
+  const Group({Key? key}) : super(key: key);
 
   @override
   State<Group> createState() => _GroupState();
@@ -19,49 +18,57 @@ class _GroupState extends State<Group> {
         title: const Text('Group'),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const CreateHike()),
-                  );
-                },
-                child: const Text('Create Hike'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const Join()),
-                  );
-                },
-                child: const Text('Join Hike'),
-              ),
-            ],
-          ),
-         SizedBox(
-           height: 5,
-         ),
-          Container(
-            width: 300,
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(width: 1))
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const CreateHike()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.blue, // Set the desired color
+                  ),
+                  child: const Text('Create Hike'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const Join()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.green, // Set the desired color
+                  ),
+                  child: const Text('Join Hike'),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 5,),
+          const SizedBox(height: 10),
           Container(
-            height: 600,
-            child:_buildHikeList(),
-          )
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: _buildHikeList(),
+          ),
         ],
       ),
     );
   }
+
   Widget _buildHikeList() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('hike').snapshots(),
@@ -93,71 +100,75 @@ class _GroupState extends State<Group> {
         }
 
         return ListView.builder(
-            itemCount: hikes.length,
-            itemBuilder: (BuildContext context, int index) {
-              final hikeData = hikes[index].data() as Map<String, dynamic>;
+          itemCount: hikes.length,
+          itemBuilder: (BuildContext context, int index) {
+            final hikeData = hikes[index].data() as Map<String, dynamic>;
 
-              final startLocation = hikeData['start'] as String?;
-              final endLocation = hikeData['end'] as String?;
-              final timings = hikeData['timings'] as Timestamp?;
+            final startLocation = hikeData['start'] as String?;
+            final endLocation = hikeData['end'] as String?;
+            final timings = hikeData['timings'] as Timestamp?;
 
-              return GestureDetector(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Hike Information'),
-                        content: Text(
-                            'The hike starts at ${timings?.toDate().toString()}'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('OK'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                child: Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  child: ListTile(
-                    title: Text(
-                      'Start Location: $startLocation',
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 8),
-                        Text(
-                          'End Location: $endLocation',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors
-                                .blue, // Set the desired color for end location
-                          ),
+            return GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Hike Information'),
+                      content: Text(
+                        'The hike starts at ${timings?.toDate().toString()}',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('OK'),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Timings: ${timings?.toDate().toString()}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color:
-                            Colors.green, // Set the desired color for timings
-                          ),
-                        ),
-                        const SizedBox(height: 8),
                       ],
-                    ),
+                    );
+                  },
+                );
+              },
+              child: Card(
+                margin: const EdgeInsets.all(8),
+                elevation: 2, // Add elevation for a subtle shadow
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Start Location: $startLocation',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'End Location: $endLocation',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors
+                              .blue, // Set the desired color for end location
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Timings: ${timings?.toDate().toString()}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color:
+                              Colors.green, // Set the desired color for timings
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            },
+              ),
+            );
+          },
         );
       },
     );
