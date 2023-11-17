@@ -82,7 +82,6 @@ class _MyHomeState extends State<MyHome> {
                 children: [
                   Expanded(
                     child: TextFormField(
-                      autofocus: true,
                       decoration: InputDecoration(
                         suffixIcon: const Icon(
                           Icons.search,
