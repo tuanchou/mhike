@@ -27,6 +27,7 @@ class _MySelectLocationState extends State<MySelectLocation> {
       _address = placemarks[0];
     }
     setState(() {
+      _manyMarker.clear();
       _manyMarker.add(Marker(
           markerId: MarkerId(
               'Marker ${_manyMarker.length+1}'
