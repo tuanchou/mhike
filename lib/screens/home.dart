@@ -115,11 +115,7 @@ class _MyHomeState extends State<MyHome> {
     return _buildSection(
       'Places and Descriptions',
       _placesReference,
-          (imageUrl, title, description) => Description(
-        imageUrl: imageUrl,
-        placeName: title,
-        description: description,
-      ),
+          (hikeId) => DetailPage(hikeId: hikeId),
     );
   }
 
@@ -127,16 +123,14 @@ class _MyHomeState extends State<MyHome> {
     return _buildSection(
       'My Hikes',
       _cultural,
-          (imageUrl, title, description) => CreateHike(
-        hikeId: title, // Change this according to your needs
-      ),
+            (hikeId) => DetailPage(hikeId: hikeId),
     );
   }
 
   Widget _buildSection(
       String sectionTitle,
       CollectionReference collectionReference,
-      Widget Function(String, String, String) navigateTo,
+      Widget Function(String) navigateTo,
       ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,16 +166,13 @@ class _MyHomeState extends State<MyHome> {
                 scrollDirection: Axis.horizontal,
                 itemCount: documents.length,
                 itemBuilder: (context, index) {
-                  String imageUrl = documents[index]['imageUrl'];
-                  String description = documents[index]['description'];
-                  String title = documents[index]['title'];
-
+                  String hikeId = documents[index].id; // Replace with the actual field name
                   return GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => navigateTo(imageUrl, title, description),
+                          builder: (context) => navigateTo(hikeId), // Pass the hikeId
                         ),
                       );
                     },
@@ -192,10 +183,14 @@ class _MyHomeState extends State<MyHome> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            Image.network(imageUrl,height: 180, // Adjust the height as needed
-                                width: 150,fit: BoxFit.cover),
+                            Image.network(
+                              documents[index]['imageUrl'],
+                              height: 180,
+                              width: 150,
+                              fit: BoxFit.cover,
+                            ),
                             Text(
-                              title,
+                              documents[index]['title'],
                               style: const TextStyle(fontSize: 16, color: Colors.white),
                             ),
                           ],
