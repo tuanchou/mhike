@@ -54,7 +54,8 @@ class _CaptureState extends State<Capture> {
         'description': _descriptionController.text,
         'image_url': imageUrl,
         'user_id': userId,
-        'hike_id': hike_id
+        'hike_id': hike_id,
+        'time_capture': DateTime.now(),
       });
 
       // Clear form fields
