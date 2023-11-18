@@ -19,8 +19,11 @@ class CreateHike extends StatefulWidget {
 }
 
 class _CreateHikeState extends State<CreateHike> {
+  double _starRating = 0;
   bool _isLoading = false;
   bool _isSubmitting = false;
+  bool _parking = false;
+  int _hikeLength = 0;
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -31,7 +34,7 @@ class _CreateHikeState extends State<CreateHike> {
   final CollectionReference _reference =
   FirebaseFirestore.instance.collection('hike');
   String? startLocation;
-  String? endLocation;
+  // String? endLocation;
   DateTime? date;
   final _auth = FirebaseAuth.instance;
 
@@ -46,22 +49,86 @@ class _CreateHikeState extends State<CreateHike> {
   }
 
   Future<void> _updateData() async {
-    if (startLocation == null || endLocation == null || date == null) {
-      print('Please fill all the fields');
+    if (!_validateFields()) {
+      print('Please fill all the required fields');
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text('Please fill in all the fields.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      setState(() {
+        _isLoading = false;
+        _isSubmitting = false;
+      });
       return;
     }
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _isLoading = true;
+      _isSubmitting = true;
+    });
 
     try {
       final user = _auth.currentUser;
+      if (_imageFile != null) {
+        Reference storageReference =
+        _storage.ref().child('hikesImage/${DateTime.now()}.jpg');
+        await storageReference.putFile(File(_imageFile!.path));
+        _imageUrl = await storageReference.getDownloadURL();
+      }
       await _reference.doc(widget.hikeId).update({
+        'title': _titleController.text,
+        'description': _descriptionController.text,
+        'imageUrl': _imageUrl, // Assuming you want to keep the existing image
+        'length': _hikeLength,
+        'parking': _parking,
         'start': startLocation,
-        'end': endLocation,
+        // 'end': endLocation,
         'timings': date,
+        'level': _starRating,
       });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Update Successfully"),
+      ));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MyHome(),
+        ),
+      );
       // Data updated successfully
     } catch (error) {
       print('Error updating data: $error');
+    } finally {
+      setState(() {
+        _isLoading = false;
+        _isSubmitting = false;
+      });
     }
+  }
+
+  bool _validateFields() {
+    if (_titleController.text.isEmpty ||
+        _descriptionController.text.isEmpty ||
+        _hikeLength <= 0 ||
+        startLocation == null ||
+        date == null ||
+        _starRating <= 0) {
+      return false;
+    }
+    return true;
   }
 
 
@@ -76,24 +143,27 @@ class _CreateHikeState extends State<CreateHike> {
   }
 
   Future<void> loadHikeData(String? hikeId) async {
-    final DocumentSnapshot userSnapshot = await _reference.doc(hikeId).get();
-    final userHike = userSnapshot.data() as Map<String, dynamic>;
+    try {
+      final DocumentSnapshot hikeSnapshot = await _reference.doc(hikeId).get();
+      final hikeData = hikeSnapshot.data() as Map<String, dynamic>;
 
-    if (userHike != null) {
-      setState(() {
-        _titleController.text = userHike['title'];
-        _descriptionController.text = userHike['description'];
-        startLocation = userHike['start'];
-        endLocation = userHike['end'];
-        date = userHike['timings'].toDate(); // Assuming it's a DateTime
-        _imageUrl = userHike['imageUrl'];
-      });
+      if (hikeData != null) {
+        setState(() {
+          _titleController.text = hikeData['title'];
+          _descriptionController.text = hikeData['description'];
+          startLocation = hikeData['start'];
+          date = hikeData['timings'].toDate(); // Assuming it's a DateTime
+          _imageUrl = hikeData['imageUrl'];
+          _parking = hikeData['parking'] ?? false;
+          _hikeLength = hikeData['length'] ?? 0;
+          _starRating = hikeData['level'] ?? 0.0;
+        });
+      }
+    } catch (error) {
+      print('Error loading hike data: $error');
     }
-
-    setState(() {
-      // Update the state to reflect the loaded data
-    });
   }
+
 
   Future<void> _showConfirmationDialog(String action) async {
     return showDialog(
@@ -137,7 +207,13 @@ class _CreateHikeState extends State<CreateHike> {
         title: const Text('Create Hike'),
         actions: [
           IconButton(
-            onPressed: () => _showConfirmationDialog('Submit'),
+            onPressed: () {
+              if (widget.hikeId != null) {
+                _showConfirmationDialog('Update');
+              } else {
+                _showConfirmationDialog('Submit');
+              }
+            },
             icon: Icon(Icons.check),
           ),
           IconButton(
@@ -150,8 +226,9 @@ class _CreateHikeState extends State<CreateHike> {
       body: Center(
     child: _isLoading
     ? CircularProgressIndicator()
-      : Stack(
-          children: [ SingleChildScrollView(
+      : Container(
+          alignment: Alignment.topCenter,
+        child:  SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -180,7 +257,29 @@ class _CreateHikeState extends State<CreateHike> {
                         ),
                       ),
                     ),
-                  SizedBox(height: 16),
+                  if (_imageFile == null && _imageUrl != 'null')
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          _imageUrl,
+                          height: 150,
+                          width: 150,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
                   ElevatedButton(
                     onPressed: _pickImage,
                     style: ElevatedButton.styleFrom(
@@ -194,7 +293,7 @@ class _CreateHikeState extends State<CreateHike> {
                     ),
                     child: Text('Pick an Image'),
                   ),
-                  SizedBox(height: 16),
+                  SizedBox(height: 5),
                   TextField(
                     controller: _titleController,
                     decoration: InputDecoration(
@@ -202,7 +301,7 @@ class _CreateHikeState extends State<CreateHike> {
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  SizedBox(height: 16),
+                  SizedBox(height: 5),
                   TextFormField(
                     controller: _descriptionController,
                     maxLines: 3,
@@ -211,29 +310,84 @@ class _CreateHikeState extends State<CreateHike> {
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  SizedBox(height: 16),
+                  SizedBox(height: 5),
+                  Row(
+                    children: [
+                      // Parking Checkbox
+                      Row(
+                        children: [
+                          Text(
+                            'Parking:',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(width: 8),
+                          Checkbox(
+                            value: _parking,
+                            onChanged: (value) {
+                              setState(() {
+                                _parking = value ?? false;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+
+                      Flexible(
+                        child: TextFormField(
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Hike Length (in kilometers)',
+                            border: OutlineInputBorder(),
+                          ),
+                          // Remove onChanged callback
+                          onChanged: (value) {
+                            setState(() {
+                              _hikeLength = int.tryParse(value) ?? 0;
+                            });
+                          },
+                          // Use the controller to handle changes
+                          controller: TextEditingController(text: _hikeLength.toString()),
+                        ),
+                      ),
+
+                    ],
+                  ),
+                  SizedBox(height: 5),
                   _buildLocationRow(
                     title: 'Start Location:',
                     value: startLocation ?? 'Not selected',
                     color: Colors.blue,
                     onPressed: () => _selectLocation('start'),
                   ),
-                  SizedBox(height: 16),
-                  _buildLocationRow(
-                    title: 'End Location:',
-                    value: endLocation ?? 'Not selected',
-                    color: Colors.green,
-                    onPressed: () => _selectLocation('end'),
-                  ),
-                  SizedBox(height: 16),
+                  SizedBox(height: 5),
+                  // _buildLocationRow(
+                  //   title: 'End Location:',
+                  //   value: endLocation ?? 'Not selected',
+                  //   color: Colors.green,
+                  //   onPressed: () => _selectLocation('end'),
+                  // ),
+                  // SizedBox(height: 5),
                   _buildDateRow(
                     title: 'Date:',
                     value: date != null
-                        ? DateFormat('yyyy-MM-dd').format(date!)
+                        ? DateFormat('yyyy-MM-dd | HH:mm').format(date!)
                         : 'Not selected',
-                    onPressed: _selectDate,
+                    onPressed: _selectDateAndTime,
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 5),
+                  Text(
+                    'Difficulty level:',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8),
+                  StarRatingWidget(
+                    onRatingChanged: (rating) {
+                      setState(() {
+                        _starRating = rating;
+                      });
+                    },
+                    initialRating: _starRating,
+                  ),
 
 
                 ],
@@ -241,7 +395,7 @@ class _CreateHikeState extends State<CreateHike> {
               ),
             ),
           ),
-          ]
+
       ),
     ),
     );
@@ -325,7 +479,7 @@ class _CreateHikeState extends State<CreateHike> {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: const Text('Select Date'),
+          child: const Text('Select Date Time'),
         ),
       ],
     );
@@ -344,27 +498,42 @@ class _CreateHikeState extends State<CreateHike> {
             startLocation =
             "Latitude: ${value['lat']}, Longitude: ${value['lng']}";
           } else {
-            endLocation =
-            "Latitude: ${value['lat']}, Longitude: ${value['lng']}";
+            // endLocation =
+            // "Latitude: ${value['lat']}, Longitude: ${value['lng']}";
           }
         });
       }
     });
   }
 
-  void _selectDate() {
-    showDatePicker(
+  void _selectDateAndTime() async {
+    DateTime? selectedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
-    ).then((value) {
-      if (value != null) {
+    );
+
+    if (selectedDate != null) {
+      TimeOfDay? selectedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (selectedTime != null) {
+        DateTime selectedDateTime = DateTime(
+          selectedDate.year,
+          selectedDate.month,
+          selectedDate.day,
+          selectedTime.hour,
+          selectedTime.minute,
+        );
+
         setState(() {
-          date = value;
+          date = selectedDateTime;
         });
       }
-    });
+    }
   }
   Future<void> _deleteData() async {
     setState(() {
@@ -404,12 +573,7 @@ class _CreateHikeState extends State<CreateHike> {
       _isLoading = true;
       _isSubmitting = true;
     });
-    if (_imageFile == null ||
-        _titleController.text.isEmpty ||
-        _descriptionController.text.isEmpty ||
-        startLocation == null ||
-        endLocation == null ||
-        date == null) {
+    if (!_validateFields()) {
       // Show an error message or handle the case where any of the required fields is empty
       showDialog(
         context: context,
@@ -446,8 +610,11 @@ class _CreateHikeState extends State<CreateHike> {
         'description': _descriptionController.text,
         'imageUrl': imageUrl,
         'start': startLocation,
-        'end': endLocation,
+        // 'end': endLocation,
         'timings': date,
+        'parking': _parking,
+        'length': _hikeLength,
+        'level': _starRating,
         'userId': user?.uid,
       });
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -469,5 +636,35 @@ class _CreateHikeState extends State<CreateHike> {
         _isSubmitting = false;
       });
     }
+  }
+
+}
+class StarRatingWidget extends StatelessWidget {
+  final double initialRating;
+  final ValueChanged<double> onRatingChanged;
+
+  const StarRatingWidget({
+    Key? key,
+    required this.initialRating,
+    required this.onRatingChanged,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(5, (index) {
+        return GestureDetector(
+          onTap: () {
+            onRatingChanged(index + 1.0);
+          },
+          child: Icon(
+            index < initialRating ? Icons.star : Icons.star_border,
+            color: Colors.yellow,
+            size: 40.0,
+          ),
+        );
+      }),
+    );
   }
 }
