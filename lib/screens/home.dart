@@ -15,6 +15,7 @@ class MyHome extends StatefulWidget {
 }
 
 class _MyHomeState extends State<MyHome> {
+  List<QueryDocumentSnapshot> _filteredDocuments = [];
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final CollectionReference _placesReference =
   FirebaseFirestore.instance.collection('hike');
@@ -22,6 +23,8 @@ class _MyHomeState extends State<MyHome> {
   FirebaseFirestore.instance.collection('hike');
   late double latitude;
   late double longitude;
+  TextEditingController _searchController = TextEditingController();
+  late AsyncSnapshot<QuerySnapshot> _latestSnapshot;
 
   @override
   Widget build(BuildContext context) {
@@ -97,6 +100,14 @@ class _MyHomeState extends State<MyHome> {
       longitude = double.parse(coordinates[1]);
     }
   }
+  void _updateSearchResults(String query, AsyncSnapshot<QuerySnapshot> snapshot) {
+    setState(() {
+      _filteredDocuments = snapshot.data!.docs.where((document) {
+        String title = document['title'].toString().toLowerCase();
+        return title.contains(query.toLowerCase());
+      }).toList();
+    });
+  }
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 20, 11, 0),
@@ -104,6 +115,13 @@ class _MyHomeState extends State<MyHome> {
         children: [
           Expanded(
             child: TextFormField(
+              controller: _searchController,
+              onChanged: (value) {
+
+                if (_latestSnapshot.hasData) {
+                  _updateSearchResults(value, _latestSnapshot);
+                }
+              },
               decoration: InputDecoration(
                 suffixIcon: const Icon(
                   Icons.search,
@@ -171,7 +189,16 @@ class _MyHomeState extends State<MyHome> {
                 return Text('Error: ${snapshot.error}');
               }
 
-              List<QueryDocumentSnapshot> documents = snapshot.data!.docs;
+              _latestSnapshot = snapshot;
+              List<QueryDocumentSnapshot> documents = _filteredDocuments.isNotEmpty
+                  ? _filteredDocuments
+                  : snapshot.data!.docs;
+
+              // Filter documents based on the search query
+              // List<QueryDocumentSnapshot> filteredDocuments = documents.where((document) {
+              //   String title = document['title'].toString().toLowerCase();
+              //   return title.contains(_searchController.text.toLowerCase());
+              // }).toList();
 
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -217,6 +244,7 @@ class _MyHomeState extends State<MyHome> {
       ],
     );
   }
+
 
   Widget _buildBottomNavigationBar() {
     return BottomAppBar(
