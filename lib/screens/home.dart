@@ -15,6 +15,7 @@ class MyHome extends StatefulWidget {
 }
 
 class _MyHomeState extends State<MyHome> {
+  List<QueryDocumentSnapshot> _filteredDocuments = [];
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final CollectionReference _placesReference =
   FirebaseFirestore.instance.collection('hike');
@@ -22,6 +23,8 @@ class _MyHomeState extends State<MyHome> {
   FirebaseFirestore.instance.collection('hike');
   late double latitude;
   late double longitude;
+  TextEditingController _searchController = TextEditingController();
+  late AsyncSnapshot<QuerySnapshot> _latestSnapshot;
 
   @override
   Widget build(BuildContext context) {
@@ -57,18 +60,37 @@ class _MyHomeState extends State<MyHome> {
   }
 
   Widget _buildTopBar() {
+    final user = FirebaseAuth.instance.currentUser;
+    String userId = user?.uid ?? "";
+    CollectionReference userInfoCollection = FirebaseFirestore.instance.collection('user-info');
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 40, 16, 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          SizedBox(
-            width: 20,
-          ),
-          CircleAvatar(
-            backgroundImage: AssetImage('assets/images/register.png'),
-          ),
-        ],
+      child: StreamBuilder<DocumentSnapshot>(
+        stream: userInfoCollection.doc(userId).snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          }
+
+          if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          }
+
+          String imageUrl = snapshot.data?['Avatar'] ?? ''; // Replace 'imageUrl' with the actual field name
+
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+                width: 20,
+              ),
+              CircleAvatar(
+                backgroundImage: NetworkImage(imageUrl)// Placeholder image if imageUrl is empty
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -97,6 +119,14 @@ class _MyHomeState extends State<MyHome> {
       longitude = double.parse(coordinates[1]);
     }
   }
+  void _updateSearchResults(String query, AsyncSnapshot<QuerySnapshot> snapshot) {
+    setState(() {
+      _filteredDocuments = snapshot.data!.docs.where((document) {
+        String title = document['title'].toString().toLowerCase();
+        return title.contains(query.toLowerCase());
+      }).toList();
+    });
+  }
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 20, 11, 0),
@@ -104,6 +134,13 @@ class _MyHomeState extends State<MyHome> {
         children: [
           Expanded(
             child: TextFormField(
+              controller: _searchController,
+              onChanged: (value) {
+
+                if (_latestSnapshot.hasData) {
+                  _updateSearchResults(value, _latestSnapshot);
+                }
+              },
               decoration: InputDecoration(
                 suffixIcon: const Icon(
                   Icons.search,
@@ -127,6 +164,7 @@ class _MyHomeState extends State<MyHome> {
       'Places and Descriptions',
       _placesReference,
           (hikeId) => DetailPage(hikeId: hikeId),
+      "null",
     );
   }
 
@@ -134,14 +172,15 @@ class _MyHomeState extends State<MyHome> {
     return _buildSection(
       'My Hikes',
       _cultural,
-            (hikeId) => DetailPage(hikeId: hikeId),
+          (hikeId) => DetailPage(hikeId: hikeId),
+      FirebaseAuth.instance.currentUser?.uid, // Pass the current userId to filter hikes
     );
   }
-
   Widget _buildSection(
       String sectionTitle,
       CollectionReference collectionReference,
       Widget Function(String) navigateTo,
+      String? userId, // Add userId parameter
       ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,13 +210,23 @@ class _MyHomeState extends State<MyHome> {
                 return Text('Error: ${snapshot.error}');
               }
 
-              List<QueryDocumentSnapshot> documents = snapshot.data!.docs;
-
+              _latestSnapshot = snapshot;
+              List<QueryDocumentSnapshot> documents = _filteredDocuments.isNotEmpty
+                  ? _filteredDocuments
+                  : snapshot.data!.docs;
+              List<QueryDocumentSnapshot> userHikes = documents;
+              // Filter documents based on the userId
+              if(userId != "null") {
+                print("My Hike: $userId");
+                userHikes = documents
+                    .where((document) => document['userId'] == userId)
+                    .toList();
+              }
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: documents.length,
+                itemCount: userHikes.length,
                 itemBuilder: (context, index) {
-                  String hikeId = documents[index].id; // Replace with the actual field name
+                  String hikeId = userHikes[index].id; // Replace with the actual field name
                   return GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -195,13 +244,13 @@ class _MyHomeState extends State<MyHome> {
                         child: Column(
                           children: [
                             Image.network(
-                              documents[index]['imageUrl'],
+                              userHikes[index]['imageUrl'],
                               height: 180,
                               width: 150,
                               fit: BoxFit.cover,
                             ),
                             Text(
-                              documents[index]['title'],
+                              userHikes[index]['title'],
                               style: const TextStyle(fontSize: 16, color: Colors.white),
                             ),
                           ],
@@ -217,6 +266,7 @@ class _MyHomeState extends State<MyHome> {
       ],
     );
   }
+
 
   Widget _buildBottomNavigationBar() {
     return BottomAppBar(

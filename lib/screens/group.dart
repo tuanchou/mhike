@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mhike/screens/createhike.dart';
@@ -80,6 +81,9 @@ class _GroupState extends State<Group> {
   }
 
   Widget _buildHikeList() {
+    final user = FirebaseAuth.instance.currentUser;
+    final String userId = user?.uid ?? "";
+
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('hike').snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -109,22 +113,34 @@ class _GroupState extends State<Group> {
           );
         }
 
+        final userHikes = hikes.where((hike) => hike['userId'] == userId).toList();
+
+        if (userHikes.isEmpty) {
+          return Center(
+            child: Text(
+              'No hikes available for the current user',
+              style: TextStyle(fontSize: 16),
+            ),
+          );
+        }
+
         return ListView.builder(
-          itemCount: hikes.length,
+          itemCount: userHikes.length,
           itemBuilder: (BuildContext context, int index) {
-            final hikeData = hikes[index].data() as Map<String, dynamic>;
+            final hikeData = userHikes[index].data() as Map<String, dynamic>;
 
             final title = hikeData['title'] as String?;
             final description = (hikeData['description'] as String?)?.trim();
             final startTime = hikeData['timings'] as Timestamp?;
             final formattedDate =
             startTime != null ? DateFormat('yyyy-MM-dd').format(startTime.toDate()) : 'Not available';
+
             return GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CreateHike(hikeId: hikes[index].id),
+                    builder: (context) => CreateHike(hikeId: userHikes[index].id),
                   ),
                 );
               },
@@ -169,4 +185,5 @@ class _GroupState extends State<Group> {
       },
     );
   }
+
 }

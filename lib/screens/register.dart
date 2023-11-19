@@ -139,7 +139,7 @@ class _MyRegisterState extends State<MyRegister> {
                                     'Address': null,
                                     'DoB': null,
                                     'Gender': null,
-                                    'Avatar': null,
+                                    'Avatar': 'https://thumbs.dreamstime.com/b/default-avatar-profile-icon-social-media-user-vector-default-avatar-profile-icon-social-media-user-vector-portrait-176194876.jpg',
                                   }).then((_) {
                                     Navigator.pushNamed(context, 'login');
                                   }).catchError((_passwordError) {
