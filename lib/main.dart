@@ -6,9 +6,10 @@ import 'package:mhike/screens/profile.dart';
 import 'package:mhike/screens/register.dart';
 import 'package:mhike/screens/splash.dart';
 import 'package:mhike/screens/observation.dart';
-
+import 'package:logging/logging.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp();
   runApp(SafeArea(
       child: MaterialApp(

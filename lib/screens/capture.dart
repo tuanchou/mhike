@@ -60,11 +60,14 @@ class _CaptureState extends State<Capture> {
 
       // Clear form fields
       _descriptionController.clear();
+
+      // Move this setState block here
       setState(() {
         imageUrl = "null";
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
