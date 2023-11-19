@@ -293,7 +293,7 @@ class _CreateHikeState extends State<CreateHike> {
                     ),
                     child: Text('Pick an Image'),
                   ),
-                  SizedBox(height: 5),
+                  SizedBox(height: 8),
                   TextField(
                     controller: _titleController,
                     decoration: InputDecoration(
@@ -301,7 +301,7 @@ class _CreateHikeState extends State<CreateHike> {
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  SizedBox(height: 5),
+                  SizedBox(height: 8),
                   TextFormField(
                     controller: _descriptionController,
                     maxLines: 3,
@@ -310,7 +310,7 @@ class _CreateHikeState extends State<CreateHike> {
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  SizedBox(height: 5),
+                  SizedBox(height: 8),
                   Row(
                     children: [
                       // Parking Checkbox
@@ -352,14 +352,14 @@ class _CreateHikeState extends State<CreateHike> {
 
                     ],
                   ),
-                  SizedBox(height: 5),
+                  SizedBox(height: 8),
                   _buildLocationRow(
                     title: 'Start Location:',
                     value: startLocation ?? 'Not selected',
                     color: Colors.blue,
                     onPressed: () => _selectLocation('start'),
                   ),
-                  SizedBox(height: 5),
+                  SizedBox(height: 8),
                   // _buildLocationRow(
                   //   title: 'End Location:',
                   //   value: endLocation ?? 'Not selected',
@@ -374,7 +374,7 @@ class _CreateHikeState extends State<CreateHike> {
                         : 'Not selected',
                     onPressed: _selectDateAndTime,
                   ),
-                  SizedBox(height: 5),
+                  SizedBox(height: 8),
                   Text(
                     'Difficulty level:',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
