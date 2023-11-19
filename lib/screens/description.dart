@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 
 
@@ -28,7 +29,8 @@ class _CreateDetailPage extends State<DetailPage> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-
+  double latitude = 11.9404192;
+  double longitude = 108.4583132;
 
 
   final CollectionReference _reference =
@@ -49,7 +51,17 @@ class _CreateDetailPage extends State<DetailPage> {
       loadHikeData(widget.hikeId);
     }
   }
+  void _extractLatLng(String startLocation) {
+    List<String> coordinates = startLocation
+        .replaceAll('Latitude: ', '')
+        .replaceAll('Longitude: ', '')
+        .split(', ');
 
+    if (coordinates.length == 2) {
+      latitude = double.parse(coordinates[0]);
+      longitude = double.parse(coordinates[1]);
+    }
+  }
   Future<void> loadHikeData(String? hikeId) async {
     try {
       final DocumentSnapshot hikeSnapshot = await _reference.doc(hikeId).get();
@@ -69,12 +81,12 @@ class _CreateDetailPage extends State<DetailPage> {
         setState(() {
           _titleController.text = hikeData['title'];
           _descriptionController.text = hikeData['description'];
-          startLocation = hikeData['start'];
           date = hikeData['timings'].toDate(); // Assuming it's a DateTime
           _imageUrl = hikeData['imageUrl'];
           _parking = hikeData['parking'] ?? false;
           _hikeLength = hikeData['length'] ?? 0;
           _starRating = hikeData['level'] ?? 0.0;
+          _extractLatLng(hikeData['start']);
         });
       }
     } catch (error) {
@@ -142,6 +154,22 @@ class _CreateDetailPage extends State<DetailPage> {
                     ),
                   ),
                   SizedBox(height: 10),
+                  Container(
+                    height: 140,
+                    child: GoogleMap(
+                      initialCameraPosition: CameraPosition(
+                        target: LatLng(latitude, longitude),
+                        zoom: 15.0,
+                      ),
+                      markers: {
+                        Marker(
+                          markerId: MarkerId('hike_location'),
+                          position: LatLng(latitude, longitude),
+                          infoWindow: InfoWindow(title: _titleController.text),
+                        ),
+                      },
+                    ),
+                  ),
                   Text(
                     'Difficulty level:',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -151,7 +179,7 @@ class _CreateDetailPage extends State<DetailPage> {
                     onRatingChanged: (rating) {},
                     initialRating: _starRating,
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 8),
                   FutureBuilder<QuerySnapshot>(
                     future: _relations
                         .where('hike_id', isEqualTo: widget.hikeId)
@@ -165,7 +193,7 @@ class _CreateDetailPage extends State<DetailPage> {
                         final observationQuery = snapshot.data!;
                         return CarouselSlider(
                           options: CarouselOptions(
-                            height: 350,
+                            height: 300,
                             enlargeCenterPage: true,
                           ),
                           items: observationQuery.docs.map((document) {
@@ -186,7 +214,7 @@ class _CreateDetailPage extends State<DetailPage> {
                                           Image.network(
                                             imageUrl,
                                             fit: BoxFit.cover,
-                                            height: 300,
+                                            height: 250,
                                           ),
                                           SizedBox(height: 8),
                                           Text(

@@ -20,6 +20,8 @@ class _MyHomeState extends State<MyHome> {
   FirebaseFirestore.instance.collection('hike');
   final CollectionReference _cultural =
   FirebaseFirestore.instance.collection('hike');
+  late double latitude;
+  late double longitude;
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +86,17 @@ class _MyHomeState extends State<MyHome> {
       ),
     );
   }
+  void _extractLatLng(String startLocation) {
+    List<String> coordinates = startLocation
+        .replaceAll('Latitude: ', '')
+        .replaceAll('Longitude: ', '')
+        .split(', ');
 
+    if (coordinates.length == 2) {
+      latitude = double.parse(coordinates[0]);
+      longitude = double.parse(coordinates[1]);
+    }
+  }
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 20, 11, 0),
@@ -110,7 +122,6 @@ class _MyHomeState extends State<MyHome> {
       ),
     );
   }
-
   Widget _buildPlacesAndDescriptions() {
     return _buildSection(
       'Places and Descriptions',
