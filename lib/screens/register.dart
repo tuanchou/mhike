@@ -115,8 +115,11 @@ class _MyRegisterState extends State<MyRegister> {
                           if (await isEmailRegistered(
                               _emailTextController.text)) {
                             setState(() {
+
                               _emailError = "Email address has been previously registered.";
+
                             });
+                            showErrorMessage(context, _emailError);
                           } else {
                             if (_passwordTextController.text ==
                                 _confirmPasswordTextController.text) {
@@ -153,17 +156,20 @@ class _MyRegisterState extends State<MyRegister> {
                                   _passwordError =
                                       "Password is not strong enough.\nPassword must include lowercase letters, uppercase letters, numbers and special characters.";
                                 });
+                                showErrorMessage(context, _passwordError);
                               }
                             } else {
                               setState(() {
                                 _passwordError = "Passwords do not match";
                               });
+                              showErrorMessage(context, _passwordError);
                             }
                           }
                         } else {
                           setState(() {
                             _emailError = "Email address is not valid.";
                           });
+                          showErrorMessage(context, _passwordError);
                         }
                       })
                     ],
@@ -174,6 +180,25 @@ class _MyRegisterState extends State<MyRegister> {
           )
         ],
       ),
+    );
+  }
+  void showErrorMessage(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 

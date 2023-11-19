@@ -47,12 +47,12 @@ class _MyLoginState extends State<MyLogin> {
                         String password = _passwordTextController.text.trim();
 
                         if (email.isEmpty || password.isEmpty) {
-                          showErrorMessage('Email and password cannot be empty');
+                          showErrorMessage(context, 'Email and password cannot be empty');
                           return;
                         }
 
                         if (!_isValidEmail(email)) {
-                          showErrorMessage('Invalid email format');
+                          showErrorMessage(context, 'Invalid email format');
                           return;
                         }
 
@@ -64,7 +64,7 @@ class _MyLoginState extends State<MyLogin> {
                           Navigator.pushNamed(context, 'home');
                         }).catchError((e) {
                           // Handle authentication failure
-                          showErrorMessage('Invalid email or password');
+                          showErrorMessage(context, 'Invalid email or password');
                         });
                       }),
                       registerOption(),
@@ -83,16 +83,23 @@ class _MyLoginState extends State<MyLogin> {
     return emailRegExp.hasMatch(email);
   }
 
-  void showErrorMessage(String message) {
-    // Show toast or snackbar with error message
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 1,
-      backgroundColor: Colors.red,
-      textColor: Colors.white,
-      fontSize: 16.0,
+  void showErrorMessage(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 
