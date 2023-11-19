@@ -145,6 +145,7 @@ class _MyHomeState extends State<MyHome> {
       'Places and Descriptions',
       _placesReference,
           (hikeId) => DetailPage(hikeId: hikeId),
+      "null",
     );
   }
 
@@ -152,14 +153,15 @@ class _MyHomeState extends State<MyHome> {
     return _buildSection(
       'My Hikes',
       _cultural,
-            (hikeId) => DetailPage(hikeId: hikeId),
+          (hikeId) => DetailPage(hikeId: hikeId),
+      FirebaseAuth.instance.currentUser?.uid, // Pass the current userId to filter hikes
     );
   }
-
   Widget _buildSection(
       String sectionTitle,
       CollectionReference collectionReference,
       Widget Function(String) navigateTo,
+      String? userId, // Add userId parameter
       ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,18 +195,19 @@ class _MyHomeState extends State<MyHome> {
               List<QueryDocumentSnapshot> documents = _filteredDocuments.isNotEmpty
                   ? _filteredDocuments
                   : snapshot.data!.docs;
-
-              // Filter documents based on the search query
-              // List<QueryDocumentSnapshot> filteredDocuments = documents.where((document) {
-              //   String title = document['title'].toString().toLowerCase();
-              //   return title.contains(_searchController.text.toLowerCase());
-              // }).toList();
-
+              List<QueryDocumentSnapshot> userHikes = documents;
+              // Filter documents based on the userId
+              if(userId != "null") {
+                print("My Hike: $userId");
+                userHikes = documents
+                    .where((document) => document['userId'] == userId)
+                    .toList();
+              }
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: documents.length,
+                itemCount: userHikes.length,
                 itemBuilder: (context, index) {
-                  String hikeId = documents[index].id; // Replace with the actual field name
+                  String hikeId = userHikes[index].id; // Replace with the actual field name
                   return GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -222,13 +225,13 @@ class _MyHomeState extends State<MyHome> {
                         child: Column(
                           children: [
                             Image.network(
-                              documents[index]['imageUrl'],
+                              userHikes[index]['imageUrl'],
                               height: 180,
                               width: 150,
                               fit: BoxFit.cover,
                             ),
                             Text(
-                              documents[index]['title'],
+                              userHikes[index]['title'],
                               style: const TextStyle(fontSize: 16, color: Colors.white),
                             ),
                           ],
