@@ -60,18 +60,37 @@ class _MyHomeState extends State<MyHome> {
   }
 
   Widget _buildTopBar() {
+    final user = FirebaseAuth.instance.currentUser;
+    String userId = user?.uid ?? "";
+    CollectionReference userInfoCollection = FirebaseFirestore.instance.collection('user-info');
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 40, 16, 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          SizedBox(
-            width: 20,
-          ),
-          CircleAvatar(
-            backgroundImage: AssetImage('assets/images/register.png'),
-          ),
-        ],
+      child: StreamBuilder<DocumentSnapshot>(
+        stream: userInfoCollection.doc(userId).snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          }
+
+          if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          }
+
+          String imageUrl = snapshot.data?['Avatar'] ?? ''; // Replace 'imageUrl' with the actual field name
+
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+                width: 20,
+              ),
+              CircleAvatar(
+                backgroundImage: NetworkImage(imageUrl)// Placeholder image if imageUrl is empty
+              ),
+            ],
+          );
+        },
       ),
     );
   }
