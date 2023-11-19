@@ -32,6 +32,8 @@ dependencies:
     sdk: flutter
   carousel_slider: ^4.0.0
   logging: any
+  lottie: ^2.7.0
+  fluttertoast: ^8.2.4
 
   
 

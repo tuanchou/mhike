@@ -117,6 +117,14 @@ class _ProfileState extends State<Profile> {
     return Scaffold(
         appBar: AppBar(
           title: Text("Profile"),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.logout),
+              onPressed: () {
+                _signOut();
+              },
+            ),
+          ],
         ),
         body: SingleChildScrollView(
           child: Padding(
@@ -367,5 +375,15 @@ class _ProfileState extends State<Profile> {
             ),
           ),
         ));
+  }
+  Future<void> _signOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      // After signing out, navigate to the login or home screen
+      // For example:
+      Navigator.pushReplacementNamed(context, 'splash'); // Replace '/login' with your login screen route
+    } catch (e) {
+      print('Error signing out: $e');
+    }
   }
 }
